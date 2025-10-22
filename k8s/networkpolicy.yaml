@@ -4,8 +4,7 @@ metadata:
   name: trading-api-deny-by-default
   namespace: trading
 spec:
-  podSelector:
-    matchLabels: { app: svc-trading-api }
+  podSelector: { matchLabels: { app: svc-trading-api } }
   policyTypes: ["Ingress","Egress"]
   ingress:
     - from:
@@ -17,7 +16,14 @@ spec:
           port: 8080
   egress:
     - to:
-        - namespaceSelector: {}
+        - namespaceSelector: {}   # Istio sidecar/mesh
       ports:
         - protocol: TCP
           port: 15090
+    # [ADDED] 예시: MSK/Aurora egress 목적지(환경에 맞춰 조정)
+    # - to:
+    #     - ipBlock: { cidr: 10.0.0.0/16 }  # MSK brokers CIDR
+    #   ports: [{ protocol: TCP, port: 9094 }]
+    # - to:
+    #     - ipBlock: { cidr: 10.1.0.0/16 }  # RDS Proxy CIDR
+    #   ports: [{ protocol: TCP, port: 5432 }]
