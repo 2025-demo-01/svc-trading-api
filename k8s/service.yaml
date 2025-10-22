@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-trading-api
+  namespace: trading
+  labels: { app: svc-trading-api }
+spec:
+  selector: { app: svc-trading-api }
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
