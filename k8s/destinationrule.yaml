@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: dr-trading-api
+  namespace: trading
+spec:
+  host: svc-trading-api.trading.svc.cluster.local
+  trafficPolicy:
+    tls: { mode: ISTIO_MUTUAL }
+    connectionPool:
+      http:
+        http1MaxPendingRequests: 1000
+        maxRequestsPerConnection: 100
+    outlierDetection:
+      consecutive5xx: 5
+      interval: 5s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+    loadBalancer: { simple: LEAST_REQUEST }
