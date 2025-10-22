@@ -1,0 +1,8 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: trading-api-pdb
+  namespace: trading
+spec:
+  minAvailable: 1
+  selector: { matchLabels: { app: svc-trading-api } }
