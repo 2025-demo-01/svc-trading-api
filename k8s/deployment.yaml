@@ -43,4 +43,19 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             seccompProfile: { type: RuntimeDefault }
-            capabilities: { drop: ["ALL"] }
+            capabilities: { drop: ["ALL"] 
+          startupProbe:
+            httpGet: { path: /healthz, port: 8080 }
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet: { path: /readyz, port: 8080 }   # 아래 핸들러에 연결
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          terminationGracePeriodSeconds: 30
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh","-c","sleep 10"]  # LB 분리 후 drain 시간
+
+          
