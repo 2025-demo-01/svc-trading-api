@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-trading-api
+  namespace: trading
+  labels: { app: svc-trading-api }
+  annotations:
+    argocd.argoproj.io/sync-wave: "30"
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: svc-trading-api } }
+  template:
+    metadata:
+      labels: { app: svc-trading-api }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: svc-trading-api
+      containers:
+        - name: app
+          image: ghcr.io/2025-demo-01/svc-trading-api:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: http, containerPort: 8080 }
+          envFrom:
+            - secretRef: { name: trading-api-secret }
+            - configMapRef: { name: trading-api-config }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "200m", memory: "256Mi" }
+            limits:   { cpu: "1",    memory: "512Mi" }
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            seccompProfile: { type: RuntimeDefault }
+            capabilities: { drop: ["ALL"] }
