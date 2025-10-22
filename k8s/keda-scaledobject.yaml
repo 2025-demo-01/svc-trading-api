@@ -1,0 +1,18 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: trading-api-kafka-lag
+  namespace: trading
+spec:
+  scaleTargetRef: { name: svc-trading-api }
+  pollingInterval: 15
+  cooldownPeriod: 120
+  minReplicaCount: 2
+  maxReplicaCount: 20
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: "{{ .KAFKA_BROKERS }}"   # replace with valueFrom if needed
+        consumerGroup: trading-api
+        topic: orders.in
+        lagThreshold: "1000"
