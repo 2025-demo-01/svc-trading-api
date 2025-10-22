@@ -5,6 +5,7 @@ on:
       - "k8s/**"
       - "src/**"
       - "Dockerfile"
+      - "openapi.yaml"
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -23,3 +24,21 @@ jobs:
         run: |
           curl -L https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar -xz
           ./kubeconform -strict -summary k8s/*.yaml
+
+      - name: Validate OpenAPI
+        run: |
+          npm i -g @apidevtools/swagger-cli
+          swagger-cli validate openapi.yaml
+
+      - name: Trivy SBOM
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+          docker build -t ghcr.io/2025-demo-01/svc-trading-api:ci -f Dockerfile .
+          trivy image --format cyclonedx --output sbom.cdx.json ghcr.io/2025-demo-01/svc-trading-api:ci
+
+      # [OPTIONAL][ADDED] Image Signature verify (cosign.pub 필요)
+      # - name: Verify image signatures (cosign)
+      #   run: |
+      #     curl -sSL https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 -o cosign
+      #     chmod +x cosign && sudo mv cosign /usr/local/bin/
+      #     cosign verify --key cosign.pub ghcr.io/2025-demo-01/svc-trading-api:0.1.0
