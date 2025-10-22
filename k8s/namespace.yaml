@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: trading
+  labels:
+    istio-injection: enabled
+    pod-security.kubernetes.io/enforce: restricted
+    owner: sophie
+    part_of: exchange
