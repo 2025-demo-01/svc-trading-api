@@ -6,3 +6,10 @@ metadata:
 data:
   APP_ENV: dev
   LOG_LEVEL: info
+
+  KAFKA_ACKS: "all"
+  KAFKA_ENABLE_IDEMPOTENCE: "true"
+  KAFKA_MAX_IN_FLIGHT: "1"
+  KAFKA_RETRIES: "10"
+  KAFKA_LINGER_MS: "5"
+  KAFKA_BATCH_BYTES: "1048576"
