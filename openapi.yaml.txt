@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: svc-trading-api
+  version: "0.1.0"
+paths:
+  /healthz:
+    get:
+      responses:
+        "200": { description: OK }
+  /readyz:
+    get:
+      responses:
+        "200": { description: Ready }
+        "503": { description: Not Ready }
+  /api/v1/trade/orders:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [symbol, side, price, qty]
+              properties:
+                symbol: { type: string }
+                side:   { type: string, enum: [buy, sell] }
+                price:  { type: number }
+                qty:    { type: number }
+      responses:
+        "200":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id: { type: string }
+                  status:   { type: string }
