@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: trading-api-migrate
+  namespace: trading
+  annotations:
+    argocd.argoproj.io/sync-wave: "28"  
+spec:
+  template:
+    spec:
+      serviceAccountName: svc-trading-api
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: ghcr.io/2025-demo-01/svc-trading-api:0.1.0
+          args: ["migrate","up"]   
+          envFrom:
+            - secretRef: { name: trading-api-secret }
