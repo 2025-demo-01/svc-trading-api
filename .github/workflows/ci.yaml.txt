@@ -1,0 +1,25 @@
+name: build-and-validate
+on:
+  push:
+    paths:
+      - "k8s/**"
+      - "src/**"
+      - "Dockerfile"
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Build
+        run: go build ./src/...
+
+      - name: Kubeconform
+        run: |
+          curl -L https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar -xz
+          ./kubeconform -strict -summary k8s/*.yaml
