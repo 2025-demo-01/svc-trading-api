@@ -1,4 +1,4 @@
-package main
+package middleware
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 )
 
 type ctxKey string
-
 const requestIDKey ctxKey = "reqid"
 
 func WithRequestID(next http.Handler) http.Handler {
