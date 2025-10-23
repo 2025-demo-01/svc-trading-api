@@ -9,6 +9,11 @@ metadata:
 spec:
   replicas: 2
   selector: { matchLabels: { app: svc-trading-api } }
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels: { app: svc-trading-api }
@@ -18,23 +23,43 @@ spec:
         prometheus.io/path: "/metrics"
     spec:
       serviceAccountName: svc-trading-api
+      terminationGracePeriodSeconds: 30
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector: { matchLabels: { app: svc-trading-api } }
       containers:
         - name: app
           image: ghcr.io/2025-demo-01/svc-trading-api:0.1.0
           imagePullPolicy: IfNotPresent
           ports:
             - { name: http, containerPort: 8080 }
+          env:
+            - name: APP_VERSION             # [ADDED] Version 전달(Downward API로 대체 가능)
+              value: "0.1.0"
+            - name: REQUEST_TIMEOUT_MS      # [ADDED] timeout Middleware 값
+              valueFrom: { configMapKeyRef: { name: trading-api-config, key: REQUEST_TIMEOUT_MS } }
+            - name: ALLOWED_SYMBOLS         # [ADDED]
+              valueFrom: { configMapKeyRef: { name: trading-api-config, key: ALLOWED_SYMBOLS } }
           envFrom:
             - secretRef: { name: trading-api-secret }
             - configMapRef: { name: trading-api-config }
-          readinessProbe:
+          startupProbe:
             httpGet: { path: /healthz, port: 8080 }
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet: { path: /readyz, port: 8080 }
             initialDelaySeconds: 5
             periodSeconds: 5
           livenessProbe:
             httpGet: { path: /healthz, port: 8080 }
             initialDelaySeconds: 10
             periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec: { command: ["/bin/sh","-c","sleep 10"] }
           resources:
             requests: { cpu: "200m", memory: "256Mi" }
             limits:   { cpu: "1",    memory: "512Mi" }
@@ -43,19 +68,4 @@ spec:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             seccompProfile: { type: RuntimeDefault }
-            capabilities: { drop: ["ALL"] 
-          startupProbe:
-            httpGet: { path: /healthz, port: 8080 }
-            failureThreshold: 30
-            periodSeconds: 2
-          readinessProbe:
-            httpGet: { path: /readyz, port: 8080 }   # 아래 핸들러에 연결
-            initialDelaySeconds: 5
-            periodSeconds: 5
-          terminationGracePeriodSeconds: 30
-          lifecycle:
-            preStop:
-              exec:
-                command: ["/bin/sh","-c","sleep 10"]  # LB 분리 후 drain 시간
-
-          
+            capabilities: { drop: ["ALL"] }
