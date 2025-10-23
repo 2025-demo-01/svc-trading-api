@@ -6,7 +6,10 @@ metadata:
 data:
   APP_ENV: dev
   LOG_LEVEL: info
-
+  REQUEST_TIMEOUT_MS: "2000"     # [ADDED] Middleware Timeout 
+  ALLOWED_SYMBOLS: "BTCUSDT,ETHUSDT"  # [ADDED] Symbol WhiteList
+  
+  # Kafka 안전 Option(참고 값, producer는 내부에서 설정)
   KAFKA_ACKS: "all"
   KAFKA_ENABLE_IDEMPOTENCE: "true"
   KAFKA_MAX_IN_FLIGHT: "1"
