@@ -1,0 +1,14 @@
+{
+  "title": "TradeEvent",
+  "type": "object",
+  "required": ["trade_id","order_id","symbol","side","price","qty","ts"],
+  "properties": {
+    "trade_id": { "type": "string" },
+    "order_id": { "type": "string" },
+    "symbol": { "type": "string" },
+    "side": { "type": "string", "enum": ["buy","sell"] },
+    "price": { "type": "number" },
+    "qty": { "type": "number" },
+    "ts": { "type": "integer", "description": "epoch ms" }
+  }
+}
